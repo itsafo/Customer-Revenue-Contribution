@@ -1,0 +1,18 @@
+Market Table: 
+-- Removing blank data rows in market zone column 
+= Table.SelectRows(sales_markets, each ([zone] <> ""))
+
+Transactions Table: 
+-- Removing null data rows of -1 and 0 in transactions column 
+= Table.SelectRows(sales_transactions, each ([sales_amount] <> -1 and [sales_amount] <> 0)) 
+-- Adding new column to convert sales amount in USD to INR 
+= Table.AddColumn(#"Filtered Rows", "n_sales_amount", each if [currency] = "USD" or [currency] = "USD#(cr)" then [sales_amount]*75 else [sales_amount]) 
+-- Creating "Total Profit Margin" Feature Total Profit Margin = SUM('Sales transactions'[Profit_Margin]) 
+-- Creating "Revenue" Feature Revenue = SUM('Sales transactions'[norm_sales_amount]) 
+-- Creating "Profit Margin" Feature Profit Margin % = DIVIDE([Total Profit Margin],[Revenue],0) 
+-- Creating "Profit Margin Contribution %" Feature Profit Margin Contribution % = DIVIDE([Total Profit Margin],CALCULATE([Total Profit Margin],ALL('sales products'),ALL('sales customers'),ALL('sales markets'))) 
+-- Creating "Profit Target" Feature for performance analysis Profit Target = GENERATESERIES(-0.05, 0.15, 0.01) 
+-- Creating "Profit Target Value" Feature for performance analysis Profit Target Value = SELECTEDVALUE('Profit Target'[Profit Target]) 
+-- Creating "Profit Difference" Feature to highlight negative performance Target Diff = [Profit Margin %]-'Profit Target'[Profit Target Value] 
+-- Creating "Revenue Contribution %" Feature Revenue Contribution % = DIVIDE([Revenue],CALCULATE([Revenue],ALL('sales products'),ALL('sales customers'),ALL('sales markets'))) 
+-- Creating "Revenue" Feature for the last year for comparison Revenue LY = CALCULATE([Revenue],SAMEPERIODLASTYEAR('sales date'[date]))
